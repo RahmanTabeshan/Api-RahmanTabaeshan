@@ -1,0 +1,12 @@
+{
+  "name": "rahmantabeshan",
+  "version": "1.0.0",
+  "description": "bakend project for my website",
+  "main": "server.js",
+  "scripts": {
+    "dev" : "nodemon server.js" , 
+    "start" : "node server.js"
+  },
+  "author": "Rahman Tabeshan",
+  "license": "ISC"
+}
