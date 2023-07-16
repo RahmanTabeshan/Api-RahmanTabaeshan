@@ -1,12 +1,27 @@
 {
-  "name": "rahmantabeshan",
-  "version": "1.0.0",
-  "description": "bakend project for my website",
-  "main": "server.js",
-  "scripts": {
-    "dev" : "nodemon server.js" , 
-    "start" : "node server.js"
-  },
-  "author": "Rahman Tabeshan",
-  "license": "ISC"
+    "name": "rahmantabeshan",
+    "version": "1.0.0",
+    "description": "bakend project for my website",
+    "type": "module",
+    "main": "server.js",
+    "scripts": {
+        "dev": "nodemon server.js",
+        "start": "node server.js"
+    },
+    "author": "Rahman Tabeshan",
+    "license": "ISC",
+    "dependencies": {
+        "bcryptjs": "^2.4.3",
+        "cookie-parser": "^1.4.6",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "jsonwebtoken": "^9.0.0",
+        "mongoose": "^7.3.1"
+    },
+    "devDependencies": {
+        "@types/node": "^20.3.3",
+        "eslint": "^8.44.0",
+        "nodemon": "^3.0.1"
+    }
 }
