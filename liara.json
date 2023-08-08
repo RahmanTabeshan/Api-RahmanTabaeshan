@@ -1,0 +1,8 @@
+{
+    "platform": "node",
+    "app": "api-rahmantabeshan",
+    "port": "3232",
+    "node": {
+        "version": "18"
+    }
+}

@@ -1,17 +1,23 @@
 import adminModel from "../model/AdminModel.js";
 import bcrypt from "bcryptjs";
 import { createToken } from "../service/Token.js";
-
+import { existMobile, existUser } from "../utils.js";
 
 export const registerAdmin = async (req, res, next) => {
     try {
-        const { UserName, Password } = req.body;
+        const { Email: UserName, Password, Name, Mobile } = req.body;
 
-        const existUser = await adminModel.findOne({ UserName });
-        if (existUser) {
+        if (await existUser(req)) {
             return res.status(400).send({
                 error: true,
                 message: "نام کاربری از قبل وجود دارد",
+            });
+        }
+
+        if( await existMobile(req)){
+            return res.status(400).send({
+                error: true,
+                message: "کاربر با این شماره موبایل وجود دارد",
             });
         }
 
@@ -19,28 +25,13 @@ export const registerAdmin = async (req, res, next) => {
         const hashPassword = await bcrypt.hash(Password, salt);
 
         const Admin = new adminModel({
+            Name,
             UserName,
+            Mobile: parseFloat(`98${Number(Mobile)}`),
             Password: hashPassword,
         });
 
         const newAdmin = await Admin.save();
-
-        const token = createToken({
-            _id: newAdmin._id,
-            UserName: newAdmin.UserName,
-            Role: newAdmin.Role,
-            Status_Code: newAdmin.Status_Code,
-            Status: newAdmin.Status,
-        });
-
-        res.cookie("AdminToken", token, {
-            path: "/",
-            sameSite: "lax",
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "development" ? false  : true ,
-            signed : true ,
-            domain:process.env.DOMAIN
-        });
 
         res.status(201).send({
             success: true,
@@ -77,21 +68,50 @@ export const loginAdmin = async (req, res, next) => {
         { UserName: req.body.UserName },
         { Password: 0 }
     );
-    
-    const token = createToken(user.toObject())
 
-    res.cookie("AdminToken", token , {
+    const token = createToken(user.toObject());
+
+    res.cookie("AdminToken", token, {
         path: "/",
         sameSite: "lax",
         httpOnly: true,
-        secure: process.env.NODE_ENV === "development" ? false  : true ,
+        secure: process.env.NODE_ENV === "development" ? false : true,
         signed: true,
-        domain: process.env.COOKIE_DOMAIN,
-    });
-
-    res.send({
+        domain:
+            process.env.NODE_ENV === "development"
+                ? "localhost"
+                : ".rahmantabeshan.ir",
+    }).send({
         success: true,
         message: "ورود شما با موفقیت انجام شد",
         user,
     });
-}
+};
+
+export const checkExist = async (req, res, next) => {
+    const { type } = req.body;
+    switch (type.toLowerCase()) {
+        case "email": {
+            if (await existUser(req)) {
+                return res.status(400).send({
+                    error: true,
+                    message: "نام کاربری از قبل وجود دارد",
+                });
+            }
+            return res.status(200).send({
+                success: true,
+            });
+        }
+        case "mobile": {
+            if (await existMobile(req)) {
+                return res.status(400).send({
+                    error: true,
+                    message: "کاربر با این شماره موبایل وجود دارد",
+                });
+            }
+            return res.status(200).send({
+                success: true,
+            });
+        }
+    }
+};

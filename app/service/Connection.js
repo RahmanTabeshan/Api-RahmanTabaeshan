@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 mongoose.connection.on("error", (err) => {
-    console.log(err);
+    console.log("database Connection Lost");
 });
 
 const dbConnect = async () => {
