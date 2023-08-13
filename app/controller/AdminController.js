@@ -63,6 +63,13 @@ export const loginAdmin = async (req, res, next) => {
             message: "نام کاربری یا رمز عبور اشتباه وارد شده است ",
         });
     }
+    if(user.Status_Code === 50 ){
+        return res.status(400).send({
+            status: 400,
+            error: true,
+            message: "درخواست شما در انتظار تایید است",
+        })
+    }
 
     user = await adminModel.findOne(
         { UserName: req.body.UserName },
