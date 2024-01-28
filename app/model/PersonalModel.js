@@ -27,6 +27,10 @@ export const personalSchema = new mongoose.Schema({
         title: { type: String, default: "تعداد پروژه" },
         value: { type: Number, required: true },
     },
+    exprience: {
+        title: { type: String, default: "سابقه" },
+        value: { type: Number, required: true },
+    },
     condition: {
         title: { type: String, default: "وضعیت" },
         value: { type: String, required: true },

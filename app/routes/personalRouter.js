@@ -2,6 +2,8 @@ import express from "express";
 import multer from "multer";
 import AuthCookie from "../middleware/AuthCookie.js";
 import personalController from "../controller/PersonInfoController.js";
+import personalModel, { personalSchema } from "../model/PersonalModel.js";
+import mongoose from "mongoose";
 
 const personalRouter = express.Router();
 const upload = multer();
@@ -70,6 +72,20 @@ personalRouter.patch("/edit/:info", AuthCookie, personalController.editInfo);
 
 personalRouter.patch("/edit/:info/:key", AuthCookie, personalController.editInfoMulti);
 
-personalRouter.post("/upload/image", [AuthCookie, upload.single("profileImage")], personalController.uploadImage);
+personalRouter.post(
+    "/upload/image",
+    [AuthCookie, upload.single("profileImage")],
+    personalController.uploadImage
+);
+
+personalRouter.post("/edit/addsociallink", AuthCookie, personalController.addSocialLink);
+
+personalRouter.delete(
+    "/edit/deletesociallink/:deletedId",
+    AuthCookie,
+    personalController.deleteSocialLink
+);
+
+personalRouter.post("/edit/addinfo", async (req, res, next) => {});
 
 export default personalRouter;

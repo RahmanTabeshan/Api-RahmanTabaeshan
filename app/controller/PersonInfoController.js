@@ -1,11 +1,6 @@
-import {
-    S3Client,
-    PutObjectCommand,
-    GetObjectCommand,
-    DeleteObjectCommand,
-} from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import iconv from "iconv-lite";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
 import personalModel from "../model/PersonalModel.js";
 
 iconv.skipDecodeWarning = true;
@@ -117,9 +112,15 @@ const personalController = {
 
         const { id } = req.body;
         try {
-            console.log(1);
             const personInfo = await personalModel.findById(id);
+
             const file = req.file;
+            if (!file) {
+                return res.status(400).send({
+                    success: false,
+                    message: ".فایل را انتخاب کنید",
+                });
+            }
             const fileName = iconv.decode(file.originalname, "utf-8");
             const key = `images/${fileName}`;
             const { profileImage } = personInfo;
@@ -138,7 +139,6 @@ const personalController = {
 
             try {
                 await client.send(new DeleteObjectCommand(deleteParams));
-                console.log("2");
                 const addParams = {
                     Body: file.buffer,
                     Bucket: process.env.LIARA_BUCKET_NAME,
@@ -147,11 +147,9 @@ const personalController = {
                 const command = new PutObjectCommand(addParams);
                 try {
                     await client.send(command);
-                    profileImage.key = key ;
-                    profileImage.name = fileName ,
-                    profileImage.url = `${process.env.CLOUD_HOST}/${key}`
-
-                    console.log(profileImage);
+                    profileImage.key = key;
+                    profileImage.name = fileName;
+                    profileImage.url = `${process.env.CLOUD_HOST}/${key}`;
                     await personInfo.save();
                     res.status(200).send({
                         success: true,
@@ -175,5 +173,69 @@ const personalController = {
             });
         }
     },
+
+    addSocialLink: async (req, res) => {
+        const { id, title_fa, title_en, link } = req.body;
+        if (!id || !title_fa || !title_en || !link) {
+            res.status(400).send({
+                success: false,
+                status: "Bad Request",
+                message: "اطلاعات وارد شده اشتباه می باشد",
+            });
+        }
+        try {
+            const personalInfo = await personalModel.findById(id);
+            const { socialLink } = personalInfo;
+            socialLink.push({
+                title_fa,
+                title_en,
+                value: link,
+            });
+            try {
+                await personalInfo.save();
+                res.status(200).send({
+                    success: true,
+                    message: "لینک جدید با موفقیت افزوده شد.",
+                });
+            } catch (error) {
+                res.status(500).send({
+                    message: "مشکلی در سرور پیش آمده است لطفا پس از مدتی دوباره امتحان کنید.",
+                });
+            }
+        } catch (error) {
+            res.status(402).send({
+                success: false,
+                message: "لطفا اطلاعات ارسالی را بررسی و دوباره تلاش کنید.",
+            });
+        }
+    },
+
+    deleteSocialLink : async (req, res, next) => {
+        const { deletedId } = req.params;
+        const { id } = req.body;
+        if (!id || typeof id !== "string") {
+            return res.status(404).send({
+                success: false,
+                message: "اطلاعاتی دریافتی معتبر نیست",
+            });
+        }
+        const personInfo = await personalModel.findById(id);
+        if (!personInfo) {
+            return next();
+        }
+        const { socialLink } = personInfo;
+        const filterLink = socialLink.filter((item) => item.id !== deletedId);
+        personInfo.socialLink = [...filterLink];
+        try {
+            await personInfo.save();
+            return res.status(200).send({
+                success: true,
+                message: "لینک مورد نظر با موفقیت حذف شد",
+            });
+        } catch (error) {
+            next(error) ;
+        }
+    }
+
 };
 export default personalController;
